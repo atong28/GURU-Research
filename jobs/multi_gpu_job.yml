@@ -1,0 +1,104 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: multi-gpu-test-run
+spec:
+  template:
+    spec:
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  # - key: kubernetes.io/hostname
+                  #   operator: NotIn
+                  #   values:
+                  #     - perfsonar.csusb.edu
+                  #     - prp-gpu-3.t2.ucsd.edu
+                  - key: nvidia.com/gpu.product
+                    operator: In
+                    values:
+                    - NVIDIA-TITAN-RTX
+                    - NVIDIA-A40
+                    - NVIDIA-GeForce-RTX-3090
+                    - NVIDIA-RTX-A6000
+                    - NVIDIA-RTX-A5000
+                    # - NVIDIA-RTX-A4000
+                    # - NVIDIA-GeForce-RTX-2080-Ti
+                    - NVIDIA-A10
+                    - NVIDIA-GeForce-RTX-4090
+      containers:
+        - name: demo
+          image: gitlab-registry.nrp-nautilus.io/w6xu/guru-docker-image:3699f97c
+          command: ["/bin/bash"]
+          # /data/scripts/init.sh;
+          args:
+            - "-c"
+            - >-
+              nvidia-smi -L  &&
+              cd /root/MorganFP_prediction/reproduce_previous_works/Spectre &&
+              python train_ranker_transformer.py transformer_2d1d --train_on_all_info_set true --foldername debug  --expname all_info_trial --out_dim inf --FP_choice DB_specific_FP_R_10 --scheduler attention  --wavelength_bounds 0.01 400.0 --wavelength_bounds 0.01 20.0 
+ # python train_ranker_transformer.py hsqc_transformer --name_type 2 --foldername smiles_dataset --expname use_hyun_FP_with_correct_ranking --epochs 300 --do_hyun_FP  --patience 20 --pos_weight 2 --lr 5e-5 --bs 256 
+
+          volumeMounts:
+            # - mountPath: "/data"
+            #   name: wangdong-smart-vol
+            # - mountPath: "/root/autoencoder_denoiser/exps"
+            #   name: wangdong-smart-vol
+            - mountPath: "/root"
+              name: smart-tess-code
+            - mountPath: /dev/shm
+              name: dshm
+            - mountPath: /workspace
+              name: data-unzip
+          resources:
+            limits:
+              memory: 512Gi
+              cpu: "8"
+              ephemeral-storage: 300Gi
+              nvidia.com/gpu: "2"
+            requests:
+              memory: 512Gi
+              cpu: "8"
+              ephemeral-storage: 300Gi
+              nvidia.com/gpu: "2"
+
+
+      initContainers:
+        - name: unzip-init
+          image: gitlab-registry.nrp-nautilus.io/w6xu/guru-docker-image:3699f97c
+          command: ["sh"]
+          args:
+            - "-c"
+            - >-
+              bash /root/MorganFP_prediction/task_scripts/unzip_dataset_v2.sh &&
+              echo "Unzipping complete."
+          resources:
+            requests:
+              memory: "4Gi"
+              cpu: "2"
+            limits:
+              memory: "4Gi"
+              cpu: "2"
+          volumeMounts:
+            - mountPath: "/root"
+              name: smart-tess-code
+            - mountPath: "/workspace"
+              name: data-unzip
+      volumes:
+        # - name: wangdong-smart-vol
+        #   persistentVolumeClaim:
+        #     claimName: wangdong-smart-vol
+        - name: smart-tess-code
+          persistentVolumeClaim:
+            claimName: smart-tess-code
+        - name: dshm
+          emptyDir:
+            medium: Memory
+        - name: data-unzip
+          emptyDir: {}
+      restartPolicy: Never
+      # imagePullSecrets:
+      #   - name: gitlab-auth
+  backoffLimit: 1

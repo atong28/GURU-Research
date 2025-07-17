@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hsqc-debug
+spec:
+
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                  # - NVIDIA-GeForce-RTX-1080
+                  # - NVIDIA-GeForce-RTX-1080-Ti
+                  # - NVIDIA-GeForce-RTX-2080-Ti
+                  - NVIDIA-TITAN-RTX
+                  - NVIDIA-A40
+                  - NVIDIA-GeForce-RTX-3090
+                  - NVIDIA-RTX-A6000
+                  - NVIDIA-RTX-A5000
+                  - NVIDIA-A10
+                  - NVIDIA-GeForce-RTX-4090
+  containers:
+    - name: pod-container
+      image: xwd0418/dl_docker:flask
+      command: ["sh"]
+      args: 
+      - "-c"
+      - >- 
+        sleep infinity 
+      volumeMounts:
+        - mountPath: "/root"
+          name: smart-tess-code
+        - mountPath: /dev/shm
+          name: dshm
+        - mountPath: /workspace
+          name: data-unzip
+      resources:
+        limits:
+          memory: 20Gi
+          cpu: 2
+          nvidia.com/gpu: 0
+          ephemeral-storage: 100Gi
+        requests:
+          memory: 20Gi
+          cpu: 2
+          nvidia.com/gpu: 0
+          ephemeral-storage: 100Gi
+  
+  volumes:
+    - name: smart-tess-code
+      persistentVolumeClaim:
+        claimName: smart-tess-code
+    - name: dshm
+      emptyDir:
+        medium: Memory
+    - name: data-unzip
+      emptyDir: {}
+
