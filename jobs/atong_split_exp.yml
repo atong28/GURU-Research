@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: atong-d-lr-1e-5-all-inputs-seed-3 
+  name: atong-e-all-inputs-mixedatt-2-seed-1 
   labels:
     owner: atong
 spec:
@@ -42,7 +42,7 @@ spec:
               cd /root/gurusmart  &&
               ./startup.sh MoonshotDatasetWithOldSplits.zip &&
               cd /root/gurusmart/Moonshot &&
-              torchrun --nproc_per_node=6 self_attention_main.py --input_types {hsqc,c_nmr,h_nmr,mw,mass_spec,iso_dist} --requires hsqc --seed 3 --experiment_name d-lr-1e-5-all-inputs-seed-3 --jittering 1.0 --lr 5e-5 
+              torchrun --nproc_per_node=6 mixed_attention_main_2.py --input_types {hsqc,c_nmr,h_nmr,mw,mass_spec,iso_dist} --requires hsqc --seed 1 --experiment_name e-all-inputs-mixedatt-2-seed-1 
  # python train_ranker_transformer.py hsqc_transformer --name_type 2 --foldername smiles_dataset --expname use_hyun_FP_with_correct_ranking --epochs 300 --do_hyun_FP  --patience 20 --pos_weight 2 --lr 5e-5 --bs 256 
 
           volumeMounts:
