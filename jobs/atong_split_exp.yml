@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: atong-e-all-inputs-mixedatt-2-seed-1 
+  name: atong-h-spectre-mixedatt-with-formula-seed-3 
   labels:
     owner: atong
 spec:
@@ -26,8 +26,6 @@ spec:
                     - NVIDIA-GeForce-RTX-3090
                     - NVIDIA-RTX-A6000
                     - NVIDIA-RTX-A5000
-                    # - NVIDIA-RTX-A4000
-                    # - NVIDIA-GeForce-RTX-2080-Ti
                     - NVIDIA-A10
                     - NVIDIA-GeForce-RTX-4090
       containers:
@@ -40,11 +38,9 @@ spec:
             - >-
               nvidia-smi -L  &&
               cd /root/gurusmart  &&
-              ./startup.sh MoonshotDatasetWithOldSplits.zip &&
+              ./startup.sh MoonshotDataset.zip &&
               cd /root/gurusmart/Moonshot &&
-              torchrun --nproc_per_node=6 mixed_attention_main_2.py --input_types {hsqc,c_nmr,h_nmr,mw,mass_spec,iso_dist} --requires hsqc --seed 1 --experiment_name e-all-inputs-mixedatt-2-seed-1 
- # python train_ranker_transformer.py hsqc_transformer --name_type 2 --foldername smiles_dataset --expname use_hyun_FP_with_correct_ranking --epochs 300 --do_hyun_FP  --patience 20 --pos_weight 2 --lr 5e-5 --bs 256 
-
+              torchrun --nproc_per_node=4 main.py --model_mode mixed --input_types {hsqc,c_nmr,h_nmr,mw,formula} --seed 3 --experiment_name h-spectre-mixedatt-with-formula-seed-3 
           volumeMounts:
             # - mountPath: "/data"
             #   name: wangdong-smart-vol
@@ -59,14 +55,14 @@ spec:
           resources:
             limits:
               memory: 64Gi
-              cpu: "24"
-              ephemeral-storage: 300Gi
-              nvidia.com/gpu: "6"
+              cpu: "16"
+              ephemeral-storage: 200Gi
+              nvidia.com/gpu: "4"
             requests:
               memory: 64Gi
-              cpu: "24"
-              ephemeral-storage: 300Gi
-              nvidia.com/gpu: "6"
+              cpu: "16"
+              ephemeral-storage: 200Gi
+              nvidia.com/gpu: "4"
 
       volumes:
         # - name: wangdong-smart-vol
