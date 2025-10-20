@@ -22,18 +22,18 @@ spec:
 
   containers:
     - name: pod-container
-      image: gitlab-registry.nrp-nautilus.io/w6xu/guru-docker-image:3699f97c
+      image: gitlab-registry.nrp-nautilus.io/a8tong/smart-moonshot/pixi-cuda:12.8
       command: ["sh"]
       args: 
       - "-c"
       - >- 
-        bash /root/gurusmart/startup.sh MoonshotDataset.zip && 
+        cd /root/gurusmart/Moonshot &&
+        pixi install --manifest-path pixi.toml &&
+        unzip -q /root/gurusmart/MoonshotDatasetv3.zip -d /workspace/
         sleep infinity 
       volumeMounts:
         - mountPath: "/root/gurusmart"
           name: atong-spectre
-        - mountPath: "/root/wangdong"
-          name: smart-tess-code
         - mountPath: "/workspace"
           name: data-unzip
         - mountPath: /dev/shm
@@ -55,9 +55,6 @@ spec:
     - name: atong-spectre
       persistentVolumeClaim:
         claimName: atong-spectre
-    - name: smart-tess-code
-      persistentVolumeClaim:
-        claimName: smart-tess-code
     - name: dshm
       emptyDir:
         medium: Memory
