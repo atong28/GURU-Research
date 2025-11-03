@@ -27,9 +27,7 @@ spec:
       args: 
       - "-c"
       - >- 
-        cd /root/gurusmart/Moonshot &&
-        pixi install --manifest-path pixi.toml &&
-        unzip -q /root/gurusmart/MoonshotDatasetv3.zip -d /workspace/
+        bash /root/gurusmart/startup.sh MoonshotDatasetv3.zip &&
         sleep infinity 
       volumeMounts:
         - mountPath: "/root/gurusmart"
@@ -38,6 +36,8 @@ spec:
           name: data-unzip
         - mountPath: /dev/shm
           name: dshm
+        - mountPath: /code
+          name: code-workdir
         
       resources:
         limits:
@@ -59,4 +59,6 @@ spec:
       emptyDir:
         medium: Memory
     - name: data-unzip
+      emptyDir: {}
+    - name: code-workdir
       emptyDir: {}
